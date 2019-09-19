@@ -10,29 +10,19 @@ var map = L.map('map', {
     accessToken: API_KEY
   }).addTo(map);
   
-//economic index color switch
-function magColor(economic_need_index) {
-  switch (true){
-    case economic_need_index > 0.9 :
-      return "#FF3F33";
-    case economic_need_index > 0.7:
-      return "#FFA833";
-    case economic_need_index > 0.5:
-      return "#FCFF33";
-    case economic_need_index > 0.3:
-      return "#B2FF33"
-    case economic_need_index > 0.1:
-      return "#33FF52";
-    default:
-      return "#33FFE3"
-  }
-} 
 
+function getColor(d) {
+	return d >= 0.8 ? 'red' :
+	       d >= 0.6  ? 'orange' :
+	       d >= 0.4  ? 'yellow' :
+	       d >= 0.2  ? 'green' :
+	                  'black';
+}
   function geojsonMarkerOptions(feature){
 
     return{
       radius: 6,
-      fillColor: magColor(feature.properties.economic_need_index), 
+      fillColor: getColor(feature.properties.economic_need_index), 
       color: "#000000",  
       weight: 1,
       opacity: 1,
@@ -53,37 +43,27 @@ function magColor(economic_need_index) {
   });
 
  //create legend
- var legend  = L.control({
-  position: "bottomright"
-})
+
+var legend = L.control({position: 'bottomright'});
+
+legend.onAdd = function (map) {
+
+  var div = L.DomUtil.create('div', 'info legend'),
+  
+		grades = [0, .2, .4, .6, .8],
+		labels = ['<strong> Economic Need Index </strong><br></br>'];
+
+	// loop through our density intervals and generate a label with a colored square for each interval
+	for (var i = 0; i < grades.length; i++) {
+		div.innerHTML = labels += 
+			'<i style="background:' + getColor(grades[i]) + '"></i> ' +
+			grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+	}
+
+	return div;
+};
 
 
-// add details to legend
-legend.onAdd = function(){
-  // const title = '<h3>Economic Need Index:</h3>';
-  var div = L.DomUtil.create("div", "info legend");
-  var grades = [0, .1, .3, .5, .7, .9, 1];
-  var colors = [
-  "#98ee00",
-  "#d4ee00",
-  "#eecc00",
-  "#ee9c00",
-  "ea822cc",
-  "blue",
-  "ea2c2c"
-];
-  // for (var i = 0; i < grades.length; i++) {
-  //   div.innerHTML +=
-  //    "<i style='background:"  +  colors[i] + "'></i> " + 
-  //    grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + "<br>" : "+");
-  //   }
-  //   return div;
-  // };
-  for (var i = 0; i < grades.length; i++) {
-    div.innerHTML += '<i style="background: ' + colors + '"></i> ' + grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
-    }
-    return div;
-  };
 
 legend.addTo(map);
 
